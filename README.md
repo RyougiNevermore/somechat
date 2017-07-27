@@ -78,5 +78,28 @@ body：内容本身。字符串。
 * redis 缓存加入。
 * Chat app 和 web app 不再通过core共享一些公用组件，采用eda进行数据交互，满足分布式微服务的数据自治。
 
+# Example
 
+somechat web --conf={config_file_path}
 
+somechat chat --conf={config_file_path}
+
+config.example  
+```
+postgres:
+  url: host=127.0.0.1 port=15433 dbname=pharosnet user=pharosnet password='pharosnet@db'
+    connect_timeout=60 sslmode=disable
+  maxIdle: 4
+  maxOpen: 128
+redis:
+  addr: 
+  password: 
+  db: 0
+web:
+  port: :8080
+  static: /Users/doaman/workspace/projects/liulishuo/res/somechat-web/static
+  tpl: /Users/doaman/workspace/projects/liulishuo/res/somechat-web/tpl
+  favicon: 
+```
+
+ 

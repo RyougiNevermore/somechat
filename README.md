@@ -77,6 +77,8 @@ body：内容本身。字符串。
 * log自定义输出源。
 * redis 缓存加入。
 * Chat app 和 web app 不再通过core共享一些公用组件，采用eda进行数据交互，满足分布式微服务的数据自治。
+* chat app 加入服务注册。
+* web app 加入 chat app 服务发现，即由web app 输出 chat app 的 地址。
 
 # Example
 

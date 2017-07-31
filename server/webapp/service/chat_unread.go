@@ -31,17 +31,20 @@ func ChatUnReadList(userId string) ([]ChatUnRead, error) {
 	return items, nil
 }
 
-func ChatUnReadClear(room string) (error) {
-	if room == "" {
+func ChatUnReadClear(room string, toUserId string) (error) {
+	if room == "" || toUserId == "" {
 		err := fmt.Errorf("clear chat unread failed. room is empty, room = %s", room)
 		log.Log().Println(logs.Error(err).Extra(logs.F{"service", "ChatUnRead"}).Trace())
 		return err
 	}
-	row, rowGetErr := data.ChatHistoryUnReadGetByRoom(room)
+	row, rowGetErr := data.ChatHistoryUnReadGetByRoomAndToUserId(room, toUserId)
 	if rowGetErr != nil {
 		err := fmt.Errorf("clear chat unread failed. room = %s, error = %v", room, rowGetErr)
 		log.Log().Println(logs.Error(err).Extra(logs.F{"service", "ChatUnRead"}).Trace())
 		return  err
+	}
+	if row == nil || row.Id == "" {
+		return nil
 	}
 	tx, txBegErr := data.DAL().BeginTx()
 	if txBegErr != nil {
@@ -61,4 +64,12 @@ func ChatUnReadClear(room string) (error) {
 		return err
 	}
 	return nil
+}
+
+func ChatUnReadClearByFromTo(from string, to string) (error) {
+	room, roomErr := data.ChatHistoryGetRoom(from, to)
+	if roomErr != nil {
+		return roomErr
+	}
+	return ChatUnReadClear(room, to)
 }

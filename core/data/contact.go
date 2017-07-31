@@ -20,6 +20,8 @@ type ContactRow struct {
 	UpdateUser string    `col:"UPDATE_USER"`
 	UpdateTime time.Time `col:"UPDATE_TIME"`
 	Version    int64     `version:"VERSION"`
+	//
+	MagicCode string `col:"MAGIC_CODE"`
 }
 
 func (u ContactRow) TableName() string {
@@ -89,15 +91,20 @@ func ContactGetById(id string) (*ContactRow, error) {
 	return &one, nil
 }
 
-func ContactGetByOwnerAndUser(ownerId string, userId string) (*ContactRow, error) {
+func ContactGetByOwnerAndUserId(ownerId string, userId string) (*ContactRow, error) {
 	var one ContactRow
 	if err := DAL().Query(`SELECT * FROM "CONTACT" WHERE "OWNER" = $1 AND "USER_ID" = $2`, &ownerId, &userId).One(&one); err != nil {
 		err := fmt.Errorf("contact get failed, can not find by owner(%s) and user id(%s), error = %v", ownerId, userId, err)
 		log.Log().Println(logs.Error(err).Extra(logs.F{"sql", "CONTACT"}).Trace())
 		return  nil, err
 	}
-	if one.Id == "" {
-		err := fmt.Errorf("contact get failed, can not find by owner(%s) and user id(%s)", ownerId, userId)
+	return &one, nil
+}
+
+func ContactGetByOwnerAndUserEmail(ownerId string, email string) (*ContactRow, error) {
+	var one ContactRow
+	if err := DAL().Query(`SELECT * FROM "CONTACT" WHERE "OWNER" = $1 AND "USER_EMAIL" = $2`, &ownerId, &email).One(&one); err != nil {
+		err := fmt.Errorf("contact get failed, can not find by owner(%s) and user email(%s), error = %v", ownerId, email, err)
 		log.Log().Println(logs.Error(err).Extra(logs.F{"sql", "CONTACT"}).Trace())
 		return  nil, err
 	}

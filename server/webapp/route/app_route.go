@@ -15,6 +15,13 @@ func Register(app *iris.Application)  {
 
 	// contact
 	app.Post("/api/contact/add", contactApiAdd)
+	app.Post("/api/contact/add/request/accept", contactApiAcceptAddRequest)
+	app.Post("/api/contact/add/request/reject", contactApiRejectAddRequest)
 
+	// chat
+	app.Post("/api/chat/message/id/new", chatApiMessageIdNew)
+	app.Post("/api/chat/message/remove", chatApiMessageRemove)
+	app.Post("/api/chat/any", chatApiAny)
+	app.Post("/api/chat/history", chatApiHistory)
 
 }

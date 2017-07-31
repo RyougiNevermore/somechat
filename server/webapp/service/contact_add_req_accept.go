@@ -26,6 +26,7 @@ func ContactAddRequestAccept(reqId, opUserId string) (*Contact, error) {
 		log.Log().Println(logs.Error(err).Extra(logs.F{"service", "ContactAddRequestAccept"}).Trace())
 		return nil, err
 	}
+	magicCode := auid.NewAuid()
 	contactToRow := &data.ContactRow{
 		Id:auid.NewAuid(),
 		Owner:reqRow.ToId,
@@ -37,6 +38,7 @@ func ContactAddRequestAccept(reqId, opUserId string) (*Contact, error) {
 		UpdateUser:opUserId,
 		UpdateTime:time.Now(),
 		Version:int64(1),
+		MagicCode:magicCode,
 	}
 	contactFromRow := &data.ContactRow{
 		Id:auid.NewAuid(),
@@ -49,6 +51,7 @@ func ContactAddRequestAccept(reqId, opUserId string) (*Contact, error) {
 		UpdateUser:opUserId,
 		UpdateTime:time.Now(),
 		Version:int64(1),
+		MagicCode:magicCode,
 	}
 	tx, txBegErr := data.DAL().BeginTx()
 	if txBegErr != nil {

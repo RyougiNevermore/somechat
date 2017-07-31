@@ -10,7 +10,7 @@ import (
 )
 
 var RootCmd = &cobra.Command{
-	Use:   	"somechat webapp",
+	Use:   	"somechat",
 	Run: 	func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -18,6 +18,7 @@ var RootCmd = &cobra.Command{
 
 func main() {
 	RootCmd.AddCommand(cmd.WebRunCommand)
+	RootCmd.AddCommand(cmd.ChatRunCommand)
 
 	cobra.OnInitialize(func() {
 		log.Log().Println(logs.Info("cobra initialize..."))

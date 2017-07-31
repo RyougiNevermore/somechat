@@ -8,7 +8,8 @@ import (
 )
 
 type ChatHistoryUnRead struct {
-	Room string	`pk:"ROOM"` // from user id + to user id | group ??
+	Id string	`pk:"ID"`
+	Room string	`col:"ROOM"` // from user id + to user id | group ??
 	FromUserId string `col:"FROM_USER_ID"`
 	ToUserId string	`col:"TO_USER_ID"`
 	Number int64	`col:"NUMBER"`
@@ -73,15 +74,10 @@ func ChatHistoryUnReadDelete(tx *qb.Tx, rows ...*ChatHistoryUnRead) (int64, erro
 	return affected, nil
 }
 
-func ChatHistoryUnReadGetByRoom(room string) (*ChatHistoryUnRead, error) {
+func ChatHistoryUnReadGetByRoomAndToUserId(room string, toUserId string) (*ChatHistoryUnRead, error) {
 	var one ChatHistoryUnRead
-	if err := DAL().Query(`SELECT * FROM "CHAT_HISTORY_UNREAD" WHERE "ROOM" = $1 `, &room).One(&one); err != nil {
+	if err := DAL().Query(`SELECT * FROM "CHAT_HISTORY_UNREAD" WHERE "ROOM" = $1 AND "TO_USER_ID" = $2`, &room, &toUserId).One(&one); err != nil {
 		err := fmt.Errorf("chat history unread get failed, can not find by room = %s, error = %v", room, err)
-		return  nil, err
-	}
-	if one.Room == "" {
-		err := fmt.Errorf("chat history unread get failed, can not find by room = %s", room)
-		log.Log().Println(logs.Error(err).Extra(logs.F{"sql", "CHAT_HISTORY_UNREAD"}).Trace())
 		return  nil, err
 	}
 	return &one, nil

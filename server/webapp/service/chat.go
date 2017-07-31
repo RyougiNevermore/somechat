@@ -5,6 +5,7 @@ import (
 )
 
 type ChatMessage struct {
+	Id string `json:"id"`
 	Room string        `json:"room"`
 	UserId string        `json:"userId"`
 	UserName string        `json:"userName"`

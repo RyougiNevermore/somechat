@@ -75,3 +75,23 @@ func ContactAddRequestGetById(id string) (*ContactAddRequestRow, error) {
 	}
 	return &one, nil
 }
+
+func ContactAddRequestListByToUser(userId string) ([]ContactAddRequestRow, error) {
+	var list []ContactAddRequestRow
+	if err := DAL().Query(`SELECT * FROM "CONTACT_ADD_REQ" WHERE "TO_ID" = $1 ORDER BY "CREATE_TIME" DESC, "ID" DESC`, &userId).List(&list); err != nil {
+		err := fmt.Errorf("contact add req by to user failed, can not find by userId = %s, error = %v", userId, err)
+		log.Log().Println(logs.Error(err).Extra(logs.F{"sql", "CONTACT_ADD_REQ"}).Trace())
+		return  nil, err
+	}
+	return list, nil
+}
+
+func ContactAddRequestListByFromUser(userId string) ([]ContactAddRequestRow, error) {
+	var list []ContactAddRequestRow
+	if err := DAL().Query(`SELECT * FROM "CONTACT_ADD_REQ" WHERE "FROM_ID" = $1 ORDER BY "CREATE_TIME" DESC, "ID" DESC`, &userId).List(&list); err != nil {
+		err := fmt.Errorf("contact add req by from user failed, can not find by userId = %s, error = %v", userId, err)
+		log.Log().Println(logs.Error(err).Extra(logs.F{"sql", "CONTACT_ADD_REQ"}).Trace())
+		return  nil, err
+	}
+	return list, nil
+}

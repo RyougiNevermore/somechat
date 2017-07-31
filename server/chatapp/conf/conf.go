@@ -13,7 +13,6 @@ type conf struct {
 	Postgres 	postgres 	`yaml:"postgres"`
 	Redis 		redis 		`yaml:"redis"`
 	Web 		web 		`yaml:"web"`
-	Remote 		remote		`yaml:"remote"`
 }
 
 func (c conf) String() string {
@@ -45,9 +44,8 @@ type web struct {
 	Favicon string `yaml:"favicon"`
 }
 
-type remote struct {
-	Chat string	`yaml:"chat"`
-}
+
+
 
 func Read(path string) error {
 	p, readFileErr := ioutil.ReadFile(path)

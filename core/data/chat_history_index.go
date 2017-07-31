@@ -14,7 +14,7 @@ func (r ChatHistoryIndex) TableName() string {
 	return "CHAT_HISTORY_INDEX"
 }
 
-func ChatHistoryIndexInsert(tx *qb.Tx, rows ...ChatHistoryIndex) (int64, error) {
+func ChatHistoryIndexInsert(tx *qb.Tx, rows ...*ChatHistoryIndex) (int64, error) {
 	if tx == nil {
 		err := fmt.Errorf("chat history index insert failed, tx is nil, tx = %v", tx)
 		return int64(0), err

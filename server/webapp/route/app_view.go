@@ -6,3 +6,10 @@ const (
 	view_contacts = "contacts.html"
 	view_chat = "chat.html"
 )
+
+// common view data
+type userViewData struct {
+	Id string
+	Name string
+	Email string
+}

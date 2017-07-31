@@ -9,8 +9,9 @@ A simple about webchat
 
 ## 程序设计
 * 采用iris作为http框架，理由是它功能足够丰富，且性能不错。
+* 分webapp 和 chatapp 两个服务。
 * web 只提供显示页面和基本请求（页面是刷新方式，api是ajax方式），web socket 负责私信和通知（未读信息、通讯录添加请求）
-* 全局time使用utc，数据库存时间带zone，网页使用moment.js来处理utc和local。
+* 全局time使用utc，数据库存时间带zone，网页使用moment.js来处理utc和local（由于时间关系，就部署在国内，国外跨时区的页面上不做处理，数据库是utc）。
 * 使用cobra作为命令辅助
 * 数据存储采用postgres，redis作为内存缓存（当前未加入）
 
@@ -23,7 +24,7 @@ A simple about webchat
 ### chat app 组件
 > agent
 
-一个用户的web socket conn代理，id为用户id。
+一个用户终端的web socket conn代理，id为用户id + 目标id。
 功能是发消息。
 
 > agent bus
@@ -57,13 +58,14 @@ body：内容本身。字符串。
 
 > 通讯录
 
-* 打开页面时，web直接输出联系人列表，每个联系人的未读信息。
-* 联系人添加请求：先创建一个添加请求，再通过该页面已向chat app 建立的ws conn 发 通知。
-* 联系人添加请求通知：通过ws conn监听kind 为 notify，name为contact add req的message，通过jquery进行页面绘制。
+* 打开页面时，web直接输出联系人列表，每个联系人的未读信息。并开启notify监听，包含未读，联系人添加请求，联系人添加请求反馈。
+* 联系人添加请求：web先创建一个添加请求，再通过chat app的api发通知。
+* 联系人添加请求通知：页面通过ws conn监听 notify，判读contentType进行不同的页面响应。
 * 联系人添加请求接收：API的方式往自己的通讯录里和对方的通讯录里加联系人，删除请求通知，jquery本地加联系人节点，通过ws向chat app 发送一个接收消息，如果对方在线，则收到消息后，自动在页面上加联系人。
-* chat信息数通知，对方在线向我发信息，本页面的ws conn 监听 该notify，name为 message unread，然后增加页面上对应联系人的未读信息数。
+* chat信息数通知，对方在线向我发信息，本页面的ws conn 监听 该notify，contentType为 unread，然后增加页面上对应联系人的未读信息数。
 * chat对话：打开一个新的页面，新建ws conn来chat。并调用api删除该联系人的未读信息，成功后删页面上的。
 * 陌生人chat：向未在通讯录中的联系人发信息，打开一个chat页面，调用 web app的api 建立一个room（chat history），并向对方发起添加请求，在得道正确的返回结果后，通过ws conn发对应notify。在对方未同意前，是无法看到所发信息，只有同意后，再点开联系人后才能看到。但整个room的内容一直在，不与添加请求相关。
+* 当向陌生人或通讯录里的用户发信息后，即打开一个window后，直到chat window关闭，才能再打开，保证两个人始终只有一个在线room。
 
 > chat
 
@@ -76,9 +78,11 @@ body：内容本身。字符串。
 * 实现distributed agent bus。
 * log自定义输出源。
 * redis 缓存加入。
-* Chat app 和 web app 不再通过core共享一些公用组件，采用eda进行数据交互，满足分布式微服务的数据自治。
+* Chat app 和 web app 不再通过core共享一些公用组件和request driver，采用eda进行数据交互，满足分布式微服务的数据自治。
 * chat app 加入服务注册。
 * web app 加入 chat app 服务发现，即由web app 输出 chat app 的 地址。
+* chat历史数据模型修改，把一个room的消息改成一个类型为array的字段存。
+
 
 # Example
 

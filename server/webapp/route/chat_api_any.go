@@ -4,19 +4,19 @@ import (
 	"github.com/kataras/iris/context"
 	"fmt"
 	"github.com/pharosnet/logs"
+	"strings"
 	"liulishuo/somechat/log"
 	"liulishuo/somechat/server/webapp/service"
-	"strings"
-	"liulishuo/somechat/server/webapp/remote"
 )
 
-type contactAddForm struct {
+type chatAnyForm struct {
 	UserId string	`form:"userId"`
 	Email string	`form:"email"`
 }
 
-func contactApiAdd(ctx context.Context)  {
-	form := new(contactAddForm)
+
+func chatApiAny(ctx context.Context)  {
+	form := new(chatAnyForm)
 	if formErr := ctx.ReadForm(form); formErr != nil {
 		err := fmt.Errorf("form read failed, %v", formErr)
 		log.Log().Println(logs.Error(err).Extra(logs.F{"http", ctx.RequestPath(true)}).Trace())
@@ -31,6 +31,23 @@ func contactApiAdd(ctx context.Context)  {
 		ctx.JSON(result{Success:false, Message:"bad form"})
 		return
 	}
+	// check in contact
+	contact, contactGetErr := service.ContactGetOneByOwnerAndUserEmail(form.UserId, form.Email)
+	if contactGetErr != nil {
+		err := fmt.Errorf("get contact failed, email = %s, user id = %s", form.Email, form.UserId)
+		log.Log().Println(logs.Error(err).Extra(logs.F{"http", ctx.RequestPath(true)}).Trace())
+		ctx.JSON(result{Success:false, Message:"check user contact failed, email=" + form.Email})
+		return
+	}
+	if contact != nil && contact.Id != "" {
+		ctx.JSON(result{
+			Success:true,
+			Message:fmt.Sprintf("This email (%s) is in your contact.", form.Email),
+			Data:map[string]interface{}{"userId":contact.UserId},
+		})
+		return
+	}
+	// no contact to new contact add request
 	toUser, toUserGetErr := service.UserGetByEmail(form.Email)
 	if toUserGetErr != nil {
 		err := fmt.Errorf("get user failed, email = %s, error = %v", form.Email, toUserGetErr)
@@ -45,36 +62,10 @@ func contactApiAdd(ctx context.Context)  {
 		ctx.JSON(result{Success:false, Message:"make contact add request failed."})
 		return
 	}
-	ctx.JSON(result{Success:true,
-		Message:"make contact add request successed. wait for accepting.",
-		Data:map[string]interface{}{
-			"id" : req.Id,
-			"toUserName": req.ToName,
-			"toUserEmail": req.ToEmail,
-			"toUserId": req.ToId,
-		}},
-	)
-	notifyContactAddRequestNew(req)
+	ctx.JSON(result{
+		Success:true,
+		Message:fmt.Sprintf("This email (%s) is not in your contact, and send a request to add a contact.", form.Email),
+		Data:map[string]interface{}{"userId":req.ToId},
+	})
 	return
-}
-
-func notifyContactAddRequestNew(row *service.ContactAddRequest)  {
-	go func(row *service.ContactAddRequest) {
-		_, remoteErr := remote.ChatApiNotifyContactAddRequestNew(
-			remote.ChatApiNotifyContactAddRequestNewForm{
-				ReqId: row.Id,
-				FromId: row.FromId,
-				FromName: row.FromName,
-				FromEmail: row.FromEmail,
-				ToId: row.ToId,
-				ToName: row.ToName,
-				ToEmail: row.ToEmail,
-			},
-		)
-		if remoteErr != nil {
-			err := fmt.Errorf("chat remote failed, error = %v", remoteErr)
-			log.Log().Println(logs.Error(err).Extra(logs.F{"remote", "chat"}).Trace())
-			return
-		}
-	}(row)
 }

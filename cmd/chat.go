@@ -5,21 +5,21 @@ import (
 	"liulishuo/somechat/log"
 	"github.com/pharosnet/logs"
 	"os"
-	"liulishuo/somechat/server/webapp/conf"
-	"liulishuo/somechat/server/webapp/app"
+	"liulishuo/somechat/server/chatapp/conf"
+	"liulishuo/somechat/server/chatapp/app"
 	"liulishuo/somechat/core/data"
 )
 
-var webRunConfFilePath string
+var chatRunConfFilePath string
 
-var WebRunCommand = &cobra.Command{
-	Use:   "web",
-	Short: "Startup web server.",
+var ChatRunCommand = &cobra.Command{
+	Use:   "chat",
+	Short: "Startup chat server.",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Log().Println(logs.Infof("read conf file, path= %s", webRunConfFilePath).Trace())
+		log.Log().Println(logs.Infof("read conf file, path= %s", chatRunConfFilePath).Trace())
 		// read conf
-		if confReadErr := conf.Read(webRunConfFilePath); confReadErr != nil {
+		if confReadErr := conf.Read(chatRunConfFilePath); confReadErr != nil {
 			log.Log().Println(logs.Errorf("read conf file failed, %v", confReadErr).Trace())
 			os.Exit(1)
 		}
@@ -35,11 +35,11 @@ var WebRunCommand = &cobra.Command{
 		defer data.Postgres().Close()
 		// TODO build redis
 
-		// build web app
+		// build chat app
 		app.StartUp()
 	},
 }
 
 func init()  {
-	WebRunCommand.PersistentFlags().StringVarP(&webRunConfFilePath, "conf", "c", "", "the conf file path")
+	ChatRunCommand.PersistentFlags().StringVarP(&chatRunConfFilePath, "conf", "c", "", "the conf file path")
 }
